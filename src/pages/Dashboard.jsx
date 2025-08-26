@@ -3,7 +3,19 @@ import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("https://crm-backend-z4ok.onrender.com/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      // Optionally handle error
+    }
     localStorage.removeItem("token");
     navigate("/");
   };

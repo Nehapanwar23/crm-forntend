@@ -6,6 +6,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false); // Add loading state
   const navigate = useNavigate();
 
   const validate = () => {
@@ -14,15 +15,31 @@ export default function Login() {
     return "";
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const err = validate();
     if (err) return setError(err);
     setError("");
+    setLoading(true);
 
-    // Mock success
-    localStorage.setItem("token", "sample-token");
-    navigate("/dashboard");
+    try {
+      const res = await fetch("https://crm-backend-z4ok.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Login failed");
+        setLoading(false);
+        return;
+      }
+      localStorage.setItem("token", data.token);
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Network error");
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,8 +92,9 @@ export default function Login() {
           <button
             type="submit"
             className="w-full rounded-xl py-2 font-semibold bg-blue-600 text-white hover:bg-blue-700 transition"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
